@@ -1,0 +1,26 @@
+{
+  "skill_name": "estudador-universal-7-niveis-codex-forge",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Estude e entregue um plano de gestao de midias sociais para escalar alcance em 21 dias para empresario/influencer/mentor com equipe pequena e urgencia maxima, detalhando onde IA ajuda e onde limita.",
+      "expected_output": "Plano estrategico e tatico executavel, com previsao de chance de sucesso, riscos e mecanismos de iteracao.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "prompt": "Com base no mesmo cenario, produza um plano alternativo com foco em multiplas frentes de distribuicao (organic, collab, comunidades, paid assistido) e priorizacao por impacto.",
+      "expected_output": "Plano comparativo com priorizacao, trade-offs e orquestracao entre canais.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "prompt": "Estude rapidamente o que mais derruba alcance quando se usa IA em social media e monte um protocolo anti-queda com checks diarios.",
+      "expected_output": "Checklist operacional diario com riscos de limitacao de IA e acoes corretivas.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arquiteto de Certezas 7.0"
+  short_description: "Estudo profundo com 7 niveis, triangulacao, contradicao e output operacional auditavel"
+  default_prompt: "Estude este tema com o protocolo universal de 7 niveis, validando fontes por hierarquia, documentando contradicoes, verificando ausencia de evidencia e entregando plano operacional com grau de certeza."
