@@ -239,6 +239,45 @@ Se qualquer item falhar, retornar ao nivel correspondente e completar.
 - `scripts/normalize_sources.py`: normalizacao de evidencias para formato padrao.
 - `scripts/pack_results.py`: consolidacao de resultados de benchmark.
 - `scripts/save_study_bundle.py`: cria estrutura de persistencia dos aprendizados e manifesto index.json.
+- `scripts/ativar_estudador.py`: hook automatico que detecta 2+ falhas sem solucao e recomenda ativar o Estudador.
+
+## Instalacao
+
+### Forma 1 — Script (uma linha no Terminal)
+
+```bash
+chmod +x instalar.sh && ./instalar.sh
+```
+
+O script faz tudo automaticamente:
+- Copia a skill para `~/.claude/skills/estudador/`
+- Configura o hook no `~/.claude/settings.json` (sem apagar hooks existentes)
+
+### Forma 2 — Pelo Claude Code (zero terminal)
+
+Abra o Claude Code e diga:
+
+```
+Instala o estudador: copia a pasta atual para ~/.claude/skills/estudador/ e adiciona
+um hook PreCompact no ~/.claude/settings.json que roda
+python3 ~/.claude/skills/estudador/scripts/ativar_estudador.py com timeout de 5000ms.
+```
+
+### Hook automatico — deteccao de falhas
+
+Apos a instalacao, o Estudador tem um hook que roda automaticamente:
+
+- **Quando:** antes do contexto ser compactado (conversa longa)
+- **O que faz:** analisa a conversa buscando tentativas com falha
+- **Gatilho:** 2+ falhas sem solucao na mesma sessao
+- **Acao:** injeta alerta recomendando parar e usar o Estudador
+
+Exemplo de alerta:
+```
+[ALERTA AUTOMATICO]
+Detectei 3 falha(s) em 5 tentativa(s) sem resolucao nesta sessao.
+RECOMENDACAO: Pare de tentar e ative a skill 'estudador'.
+```
 
 ### Assets (`assets/`)
 
