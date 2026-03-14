@@ -17,11 +17,12 @@ import json
 import sys
 import os
 import re
+import tempfile
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
-LOG_FILE = "/tmp/ativar-estudador-debug.log"
+LOG_FILE = str(Path(tempfile.gettempdir()) / "ativar-estudador-debug.log")
 ERRO_TRACKER = Path.home() / ".claude" / "inteligencia" / "_erro-tracker.json"
 
 
@@ -72,8 +73,6 @@ SINAIS_SOLUCAO = [
     r"a solucao foi", r"a solucao e", r"o que resolve",
     r"o correto e", r"a causa era", r"o problema era",
     r"descobri que", r"o erro era",
-    r"perfeito", r"otimo", r"excelente",
-    r"esta otima", r"esta otimo", r"ficou bom",
     r"now it works", r"fixed", r"solved",
 ]
 

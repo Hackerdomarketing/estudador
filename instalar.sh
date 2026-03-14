@@ -62,7 +62,7 @@ if [ -f "$SETTINGS_FILE" ]; then
             TMP_SETTINGS=$(mktemp)
             jq --arg cmd "$HOOK_COMMAND" '
                 .hooks = (.hooks // {}) |
-                .hooks.PreCompact = (.hooks.PreCompact // []) + [{
+                .hooks.UserPromptSubmit = (.hooks.UserPromptSubmit // []) + [{
                     "matcher": "*",
                     "hooks": [{
                         "type": "command",
@@ -78,7 +78,7 @@ if [ -f "$SETTINGS_FILE" ]; then
             echo -e "  ${BOLD}Adicione manualmente ao seu ~/.claude/settings.json:${NC}"
             echo ""
             echo '  "hooks": {'
-            echo '    "PreCompact": [{'
+            echo '    "UserPromptSubmit": [{'
             echo '      "matcher": "*",'
             echo '      "hooks": [{'
             echo '        "type": "command",'
@@ -96,7 +96,7 @@ else
     cat > "$SETTINGS_FILE" << EOFJSON
 {
   "hooks": {
-    "PreCompact": [
+    "UserPromptSubmit": [
       {
         "matcher": "*",
         "hooks": [
