@@ -51,8 +51,8 @@ echo -e "${YELLOW}[2/3]${NC} Corrigindo configuracao do hook..."
 if [ ! -f "$SETTINGS_FILE" ]; then
     echo -e "  ${YELLOW}⚠${NC} settings.json nao encontrado — nada a corrigir"
 else
-    python3 - << 'PYEOF'
-import json, sys
+    RESULTADO=$(python3 - << 'PYEOF'
+import json
 from pathlib import Path
 
 f = Path.home() / '.claude' / 'settings.json'
@@ -61,111 +61,46 @@ hooks = data.setdefault('hooks', {})
 pre = hooks.get('PreCompact', [])
 user_prompt = hooks.setdefault('UserPromptSubmit', [])
 
-new_pre, moved = [], False
-for group in pre:
-    estudador = [h for h in group.get('hooks', []) if 'ativar_estudador' in h.get('command', '')]
-    outros = [h for h in group.get('hooks', []) if 'ativar_estudador' not in h.get('command', '')]
-    if estudador:
-        user_prompt.append({'matcher': '*', 'hooks': estudador})
-        moved = True
-    if outros:
-        new_pre.append({**group, 'hooks': outros})
+# Verificar se ja existe em UserPromptSubmit (evitar duplicata)
+ja_existe = any(
+    'ativar_estudador' in h.get('command', '')
+    for group in user_prompt
+    for h in group.get('hooks', [])
+)
 
-if moved:
-    if new_pre:
-        hooks['PreCompact'] = new_pre
-    else:
-        hooks.pop('PreCompact', None)
-    f.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-    print('migrado')
-else:
+if ja_existe:
     print('ok')
-PYEOF
+else:
+    # Migrar do PreCompact se existir la
+    new_pre, moved = [], False
+    for group in pre:
+        estudador = [h for h in group.get('hooks', []) if 'ativar_estudador' in h.get('command', '')]
+        outros = [h for h in group.get('hooks', []) if 'ativar_estudador' not in h.get('command', '')]
+        if estudador:
+            user_prompt.append({'matcher': '*', 'hooks': estudador})
+            moved = True
+        if outros:
+            new_pre.append({**group, 'hooks': outros})
 
-    RESULT=$?
-    # Ler output do python
-    OUTPUT=$(python3 - << 'PYEOF'
-import json
-from pathlib import Path
-f = Path.home() / '.claude' / 'settings.json'
-data = json.loads(f.read_text())
-hooks = data.get('hooks', {})
-pre = hooks.get('PreCompact', [])
-for group in pre:
-    for h in group.get('hooks', []):
-        if 'ativar_estudador' in h.get('command', ''):
-            print('precisa_migrar')
-            exit()
-print('ok')
+    if moved:
+        hooks['PreCompact'] = new_pre if new_pre else hooks.pop('PreCompact', None) and None
+        f.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        print('migrado')
+    else:
+        # Nao estava em lugar nenhum — adicionar novo
+        hook_cmd = str(Path.home() / '.claude' / 'skills' / 'estudador' / 'scripts' / 'ativar_estudador.py')
+        user_prompt.append({'matcher': '*', 'hooks': [{'type': 'command', 'command': f'python3 {hook_cmd}', 'timeout': 5000}]})
+        f.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        print('adicionado')
 PYEOF
 )
 
-    if [ "$OUTPUT" = "precisa_migrar" ]; then
-        python3 << PYEOF
-import json
-from pathlib import Path
-
-f = Path.home() / '.claude' / 'settings.json'
-data = json.loads(f.read_text())
-hooks = data.setdefault('hooks', {})
-pre = hooks.get('PreCompact', [])
-user_prompt = hooks.setdefault('UserPromptSubmit', [])
-
-new_pre, moved = [], False
-for group in pre:
-    estudador = [h for h in group.get('hooks', []) if 'ativar_estudador' in h.get('command', '')]
-    outros = [h for h in group.get('hooks', []) if 'ativar_estudador' not in h.get('command', '')]
-    if estudador:
-        user_prompt.append({'matcher': '*', 'hooks': estudador})
-        moved = True
-    if outros:
-        new_pre.append({**group, 'hooks': outros})
-
-if moved:
-    if new_pre:
-        hooks['PreCompact'] = new_pre
-    else:
-        hooks.pop('PreCompact', None)
-    f.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-    print('Hook migrado de PreCompact para UserPromptSubmit')
-PYEOF
-        echo -e "  ${GREEN}✓${NC} Hook migrado para UserPromptSubmit (agora funciona em toda sessao)"
+    if [ "$RESULTADO" = "migrado" ]; then
+        echo -e "  ${GREEN}✓${NC} Hook migrado de PreCompact para UserPromptSubmit"
+    elif [ "$RESULTADO" = "adicionado" ]; then
+        echo -e "  ${GREEN}✓${NC} Hook adicionado ao UserPromptSubmit"
     else
         echo -e "  ${GREEN}✓${NC} Hook ja estava correto"
-    fi
-
-    # Verificar se hook existe em UserPromptSubmit, adicionar se nao estiver
-    HAS_HOOK=$(python3 -c "
-import json
-from pathlib import Path
-f = Path.home() / '.claude' / 'settings.json'
-data = json.loads(f.read_text())
-for group in data.get('hooks', {}).get('UserPromptSubmit', []):
-    for h in group.get('hooks', []):
-        if 'ativar_estudador' in h.get('command', ''):
-            print('sim')
-            exit()
-print('nao')
-")
-
-    if [ "$HAS_HOOK" = "nao" ]; then
-        python3 << PYEOF
-import json
-from pathlib import Path
-
-f = Path.home() / '.claude' / 'settings.json'
-hook_command = str(Path.home() / '.claude' / 'skills' / 'estudador' / 'scripts' / 'ativar_estudador.py')
-data = json.loads(f.read_text())
-hooks = data.setdefault('hooks', {})
-user_prompt = hooks.setdefault('UserPromptSubmit', [])
-user_prompt.append({
-    'matcher': '*',
-    'hooks': [{'type': 'command', 'command': f'python3 {hook_command}', 'timeout': 5000}]
-})
-f.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-print('Hook adicionado ao UserPromptSubmit')
-PYEOF
-        echo -e "  ${GREEN}✓${NC} Hook adicionado ao settings.json"
     fi
 fi
 
