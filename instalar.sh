@@ -116,9 +116,45 @@ fi
 
 echo ""
 
-# ─── PASSO 3: Verificar instalacao ────────────────────────────
+# ─── PASSO 3: Configurar triggers no CLAUDE.md global ─────────
 
-echo -e "${YELLOW}[3/3]${NC} Verificando instalacao..."
+echo -e "${YELLOW}[3/4]${NC} Configurando triggers no CLAUDE.md global..."
+
+CLAUDE_MD="$HOME/.claude/CLAUDE.md"
+
+if [ ! -f "$CLAUDE_MD" ]; then
+    touch "$CLAUDE_MD"
+fi
+
+if ! grep -q "## ESTUDADOR" "$CLAUDE_MD" 2>/dev/null; then
+    cat >> "$CLAUDE_MD" << 'TRIGGER_BLOCK'
+
+
+## ESTUDADOR
+
+Quando o usuario usar qualquer uma destas frases, ative a skill `estudador`:
+
+**Triggers de ativacao:**
+- "use o estudador", "com o estudador", "pesquise com o estudador", "ative o estudador"
+- "estudo profundo", "investigue isso", "valide isso", "preciso ter certeza"
+- "triangule as fontes", "escavacao profunda"
+- "descubra na internet", "busque na internet", "pesquise sobre"
+- "me explica com certeza"
+
+**Ativacao automatica:** O hook no settings.json detecta quando o Claude erra 2+ vezes na mesma tarefa e recomenda ativar o Estudador automaticamente.
+
+**REGRA CRITICA:** Quando o usuario mencionar "estudador" por nome, SEMPRE ativar a skill.
+TRIGGER_BLOCK
+    echo -e "  ${GREEN}✓${NC} Triggers configurados no CLAUDE.md"
+else
+    echo -e "  ${GREEN}✓${NC} Triggers ja estavam configurados"
+fi
+
+echo ""
+
+# ─── PASSO 4: Verificar instalacao ────────────────────────────
+
+echo -e "${YELLOW}[4/4]${NC} Verificando instalacao..."
 
 ERROS=0
 
