@@ -24,6 +24,7 @@ from pathlib import Path
 
 LOG_FILE = str(Path(tempfile.gettempdir()) / "ativar-estudador-debug.log")
 ERRO_TRACKER = Path.home() / ".claude" / "inteligencia" / "_erro-tracker.json"
+REPORTS_DIR = Path.home() / ".claude" / "skills" / "estudador" / "reports" / "aprendizados"
 
 
 def log(msg):
@@ -229,6 +230,51 @@ def salvar_erro_tracker(info):
         log(f"ERRO salvando tracker: {e}")
 
 
+def escanear_estudos_disponiveis():
+    """Escaneia reports/aprendizados/ e retorna lista de estudos com metadados.
+    Le os index.json de cada pasta de estudo. Retorna lista leve para injecao."""
+    estudos = []
+    if not REPORTS_DIR.exists():
+        return estudos
+    try:
+        for date_dir in sorted(REPORTS_DIR.iterdir(), reverse=True):
+            if not date_dir.is_dir():
+                continue
+            for tema_dir in sorted(date_dir.iterdir()):
+                if not tema_dir.is_dir():
+                    continue
+                index_file = tema_dir / "index.json"
+                if not index_file.exists():
+                    continue
+                try:
+                    meta = json.loads(index_file.read_text(encoding="utf-8"))
+                    cert = meta.get("certainty_summary", {})
+                    absoluta = cert.get("verdade_absoluta", 0)
+                    provavel = cert.get("verdade_provavel_forte", 0)
+                    estudos.append({
+                        "tema": meta.get("topic", tema_dir.name),
+                        "data": date_dir.name,
+                        "certeza": f"{absoluta}A+{provavel}PF",
+                        "caminho": str(tema_dir / "07-pacote-especialista.md"),
+                    })
+                except (json.JSONDecodeError, KeyError):
+                    continue
+    except Exception as e:
+        log(f"ERRO escaneando estudos: {e}")
+    return estudos
+
+
+def montar_contexto_estudos(estudos):
+    """Monta texto curto para injecao no additionalContext."""
+    if not estudos:
+        return ""
+    linhas = ["=== ESTUDOS VERIFICADOS (Skill Estudador) ==="]
+    for e in estudos[:20]:  # Limite de 20 estudos para nao poluir contexto
+        linhas.append(f"- [{e['data']}] {e['tema']} ({e['certeza']}) → {e['caminho']}")
+    linhas.append("REGRA: Antes de afirmar que algo nao e possivel ou funciona de tal forma, verifique se ha estudo sobre o tema acima.")
+    return "\n".join(linhas)
+
+
 def main():
     log("=== INICIO ativar_estudador.py ===")
 
@@ -240,60 +286,62 @@ def main():
         log(f"ERRO parsing stdin: {e}")
         sys.exit(0)
 
+    # --- PARTE 1: Escanear estudos disponíveis (SEMPRE roda, mesmo sem transcript) ---
+    estudos = escanear_estudos_disponiveis()
+    contexto_estudos = montar_contexto_estudos(estudos)
+    log(f"Estudos encontrados: {len(estudos)}")
+
+    # --- PARTE 2: Detectar falhas (só se transcript existir) ---
+    info = None
     transcript_path = input_data.get("transcript_path", "")
     log(f"transcript_path: {transcript_path}")
 
-    if not transcript_path or not os.path.exists(transcript_path):
-        log(f"Transcript nao encontrado: {transcript_path}")
+    if transcript_path and os.path.exists(transcript_path):
+        texto_assistente, texto_usuario = extrair_texto_transcript(transcript_path)
+        log(f"Texto extraido: assistente={len(texto_assistente)} chars, usuario={len(texto_usuario)} chars")
+
+        if texto_assistente or texto_usuario:
+            texto_completo = texto_assistente + " " + texto_usuario
+            texto_normalizado = normalizar_acentos(texto_completo)
+            log(f"Texto normalizado: {len(texto_normalizado)} chars")
+            info = detectar_falhas_sem_solucao(texto_normalizado)
+    else:
+        log(f"Transcript nao encontrado — pulando deteccao de falhas")
+
+    # --- PARTE 3: Montar output combinado ---
+    partes_contexto = []
+
+    if contexto_estudos:
+        partes_contexto.append(contexto_estudos)
+
+    if info:
+        salvar_erro_tracker(info)
+        kw_str = ", ".join(info["keywords"]) if info["keywords"] else "tipo nao identificado"
+        ctx_str = "\n".join(f"  - {c}" for c in info["contextos"])
+        mensagem_falha = (
+            f"[ALERTA AUTOMATICO — Inteligencia Progressiva]\n"
+            f"Detectei {info['total_falhas']} falha(s) em {info['total_tentativas']} tentativa(s) "
+            f"sem resolucao nesta sessao.\n"
+            f"Tipo de erro: {kw_str}\n"
+            f"Contexto:\n{ctx_str}\n\n"
+            f"RECOMENDACAO: Pare de tentar e ative a skill 'estudador' "
+            f"(em ~/.claude/skills/estudador/) para fazer estudo profundo de 7 niveis "
+            f"antes de continuar. Use o Nivel 1 (diagnostico de lacuna) para entender "
+            f"a causa raiz.\n"
+            f"Comando: Use a skill estudador com o contexto do erro atual."
+        )
+        partes_contexto.append(mensagem_falha)
+        log(f"Emitindo alerta de falhas + estudos")
+
+    if not partes_contexto:
+        log("Sem estudos e sem falhas — nada a injetar")
         sys.exit(0)
 
-    # Extrair texto do assistente E do usuario
-    texto_assistente, texto_usuario = extrair_texto_transcript(transcript_path)
-    log(f"Texto extraido: assistente={len(texto_assistente)} chars, usuario={len(texto_usuario)} chars")
-
-    if not texto_assistente and not texto_usuario:
-        log("Nenhum texto extraido")
-        sys.exit(0)
-
-    # Combinar e NORMALIZAR acentos para regex funcionar
-    texto_completo = texto_assistente + " " + texto_usuario
-    texto_normalizado = normalizar_acentos(texto_completo)
-    log(f"Texto normalizado: {len(texto_normalizado)} chars")
-
-    info = detectar_falhas_sem_solucao(texto_normalizado)
-    if not info:
-        log("Nenhuma falha repetida sem solucao detectada")
-        sys.exit(0)
-
-    # Salvar no tracker
-    salvar_erro_tracker(info)
-
-    # Montar mensagem — usar additionalContext para o Claude VER a recomendacao
-    kw_str = ", ".join(info["keywords"]) if info["keywords"] else "tipo nao identificado"
-    ctx_str = "\n".join(f"  - {c}" for c in info["contextos"])
-
-    mensagem = (
-        f"[ALERTA AUTOMATICO — Inteligencia Progressiva]\n"
-        f"Detectei {info['total_falhas']} falha(s) em {info['total_tentativas']} tentativa(s) "
-        f"sem resolucao nesta sessao.\n"
-        f"Tipo de erro: {kw_str}\n"
-        f"Contexto:\n{ctx_str}\n\n"
-        f"RECOMENDACAO: Pare de tentar e ative a skill 'estudador' "
-        f"(em ~/.claude/skills/estudador/) para fazer estudo profundo de 7 niveis "
-        f"antes de continuar. Use o Nivel 1 (diagnostico de lacuna) para entender "
-        f"a causa raiz.\n"
-        f"Comando: Use a skill estudador com o contexto do erro atual."
-    )
-
-    log(f"Emitindo additionalContext com recomendacao do Estudador")
-
-    # CORRECAO CRITICA: usar additionalContext (vai pro Claude)
-    # em vez de systemMessage (apenas visual pro usuario)
     output = {
-        "additionalContext": mensagem
+        "additionalContext": "\n\n".join(partes_contexto)
     }
     print(json.dumps(output, ensure_ascii=False))
-    log("=== FIM ativar_estudador.py — recomendacao emitida ===")
+    log(f"=== FIM ativar_estudador.py — contexto emitido ({len(partes_contexto)} partes) ===")
 
 
 if __name__ == "__main__":

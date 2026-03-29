@@ -35,7 +35,7 @@ echo ""
 
 # ─── PASSO 1: Copiar arquivos da skill ─────────────────────────
 
-echo -e "${YELLOW}[1/3]${NC} Copiando arquivos da skill..."
+echo -e "${YELLOW}[1/4]${NC} Copiando arquivos da skill..."
 
 mkdir -p "$SKILL_DIR"
 
@@ -47,7 +47,7 @@ echo ""
 
 # ─── PASSO 2: Configurar hook no settings.json ────────────────
 
-echo -e "${YELLOW}[2/3]${NC} Configurando hook automatico..."
+echo -e "${YELLOW}[2/4]${NC} Configurando hook automatico..."
 
 HOOK_COMMAND="python3 $SKILL_DIR/scripts/ativar_estudador.py"
 
@@ -116,9 +116,41 @@ fi
 
 echo ""
 
-# ─── PASSO 3: Configurar triggers no CLAUDE.md global ─────────
+# ─── PASSO 3: Configurar estrutura de memoria ───────────────────
 
-echo -e "${YELLOW}[3/4]${NC} Configurando triggers no CLAUDE.md global..."
+echo -e "${YELLOW}[3/5]${NC} Configurando estrutura de memoria..."
+
+# Calcular caminho do MEMORY.md global (auto-memory da Anthropic)
+# Converte $HOME em project key: /Users/alfa → -Users-alfa
+HOME_KEY=$(echo "$HOME" | tr '/' '-')
+MEMORY_DIR="$HOME/.claude/projects/$HOME_KEY/memory"
+MEMORY_FILE="$MEMORY_DIR/MEMORY.md"
+
+mkdir -p "$MEMORY_DIR"
+
+if [ -f "$MEMORY_FILE" ]; then
+    if grep -q "Estudos Verificados (Skill Estudador)" "$MEMORY_FILE" 2>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} Secao do Estudador ja existe no MEMORY.md"
+    else
+        # MEMORY.md existe mas sem secao do estudador — adicionar
+        printf '\n## Estudos Verificados (Skill Estudador)\n' >> "$MEMORY_FILE"
+        echo -e "  ${GREEN}✓${NC} Secao do Estudador adicionada ao MEMORY.md existente"
+    fi
+else
+    # MEMORY.md nao existe — criar com secao basica
+    cat > "$MEMORY_FILE" << 'MEMEOF'
+# Memoria do Projeto
+
+## Estudos Verificados (Skill Estudador)
+MEMEOF
+    echo -e "  ${GREEN}✓${NC} MEMORY.md criado com secao do Estudador"
+fi
+
+echo ""
+
+# ─── PASSO 4: Configurar triggers no CLAUDE.md global ─────────
+
+echo -e "${YELLOW}[4/5]${NC} Configurando triggers no CLAUDE.md global..."
 
 CLAUDE_MD="$HOME/.claude/CLAUDE.md"
 
@@ -154,7 +186,7 @@ echo ""
 
 # ─── PASSO 4: Verificar instalacao ────────────────────────────
 
-echo -e "${YELLOW}[4/4]${NC} Verificando instalacao..."
+echo -e "${YELLOW}[5/5]${NC} Verificando instalacao..."
 
 ERROS=0
 
@@ -176,6 +208,12 @@ if grep -q "ativar_estudador" "$SETTINGS_FILE" 2>/dev/null; then
     echo -e "  ${GREEN}✓${NC} Hook configurado no settings.json"
 else
     echo -e "  ${YELLOW}⚠${NC} Hook nao configurado (adicione manualmente)"
+fi
+
+if [ -f "$MEMORY_FILE" ] && grep -q "Estudos Verificados" "$MEMORY_FILE" 2>/dev/null; then
+    echo -e "  ${GREEN}✓${NC} MEMORY.md configurado com secao do Estudador"
+else
+    echo -e "  ${YELLOW}⚠${NC} MEMORY.md nao configurado"
 fi
 
 echo ""

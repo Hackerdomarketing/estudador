@@ -53,6 +53,26 @@ Exemplo:
 }
 ```
 
+## Fluxo pos-estudo obrigatorio
+
+Apos salvar os 10 arquivos no diretorio padrao, executar OBRIGATORIAMENTE:
+
+1. **Escrever ponteiro no MEMORY.md do projeto atual**
+   - O script `save_study_bundle.py` faz isso automaticamente
+   - Caminho: `~/.claude/projects/<project-key>/memory/MEMORY.md`
+   - O project-key e o caminho do diretorio atual com `/` substituido por `-`
+   - Se o MEMORY.md nao existir, cria com secao basica
+   - Se existir mas sem secao do estudador, adiciona a secao
+   - Se ja tiver ponteiro para o mesmo estudo, nao duplica
+
+2. **O hook `ativar_estudador.py` cuida da descoberta cross-project**
+   - Roda em TODA mensagem do usuario (via UserPromptSubmit)
+   - Escaneia `reports/aprendizados/` e le os `index.json` de cada estudo
+   - Injeta lista de estudos disponiveis no contexto via `additionalContext`
+   - Funciona independente de qual projeto esta aberto
+
+**Resultado:** Qualquer sessao futura do Claude Code vera os estudos disponíveis de duas formas: (1) via MEMORY.md do projeto (carregado automaticamente pela Anthropic), (2) via hook que injeta a lista em toda mensagem.
+
 ## Regra de versionamento
 
 - Novo estudo no mesmo tema no mesmo dia: usar `v2`, `v3`, ...

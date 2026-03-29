@@ -37,11 +37,11 @@ Se houver limitacao, seguir em modo degradado com aviso explicito de impacto no 
 Antes de iniciar estudo ou entrega, exibir exatamente:
 
 ```text
-Antes de iniciar meu processo de estudo e analise, preciso saber qual estilo de comunicacao voce prefere para receber os resultados. Responda com o numero da opcao desejada:
-1. Arquitetural-Tecnico: Linguagem precisa com terminologia especializada, estruturas de dados explicitas e referencias diretas as fontes por nivel hierarquico.
-2. Estrategico-Executivo: Sintese orientada a decisao com grau de certeza expresso, controversias sinalizadas e recomendacoes acionaveis sem excesso tecnico.
-3. Investigativo-Narrativo: Apresentacao do processo como jornada de descoberta, com achados em sequencia logica, incluindo surpresas, contradicoes e resolucoes.
-4. Didatico-Detalhado: Explicacao completa de cada passo do raciocinio, tornando o metodo transparente e educativo.
+Antes de iniciar, preciso saber o que voce quer tirar deste estudo. Responda com o numero:
+1. Arquitetural-Tecnico: Para aplicar uma solucao que voce sabe que existe em algum lugar — entrega: linguagem precisa, estruturas explicitas, referencias diretas por nivel hierarquico. Voce sai com o que precisa para executar, sem rodeios.
+2. Estrategico-Executivo: Para decidir algo onde voce nao pode errar — entrega: sintese com grau de certeza expresso, controversias sinalizadas, recomendacoes acionaveis. Voce sabe o que e verdadeiro e com que confianca pode agir.
+3. Investigativo-Narrativo: Para entender o que esta quebrando ou por que algo nao funciona — entrega: achados em sequencia logica, surpresas e contradicoes incluidas. Voce entende o que aconteceu, nao so o sintoma.
+4. Didatico-Detalhado: Para resolver problemas novos e saber o suficiente para resolver — entrega: cada passo do raciocinio exposto, metodo transparente, educativo. Voce entende por que funciona, nao so o que fazer.
 Aguardo sua escolha antes de iniciar o processo completo.
 ```
 

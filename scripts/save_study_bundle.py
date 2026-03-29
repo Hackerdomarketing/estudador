@@ -38,6 +38,46 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def calcular_memory_md_path() -> Path | None:
+    """Calcula o caminho do MEMORY.md da Anthropic para o diretorio atual.
+    Converte o CWD em project key: /Users/alfa → -Users-alfa"""
+    cwd = Path.cwd()
+    project_key = str(cwd).replace("/", "-")
+    memory_dir = Path.home() / ".claude" / "projects" / project_key / "memory"
+    return memory_dir / "MEMORY.md"
+
+
+def escrever_ponteiro_memory_md(topic_slug: str, study_path: Path, date_str: str) -> None:
+    """Escreve ponteiro do estudo no MEMORY.md do projeto atual."""
+    memory_path = calcular_memory_md_path()
+    if memory_path is None:
+        return
+
+    memory_path.parent.mkdir(parents=True, exist_ok=True)
+    ponteiro = f"- [Estudo: {topic_slug}]({study_path / '07-pacote-especialista.md'}) — {date_str}\n"
+
+    if memory_path.exists():
+        conteudo = memory_path.read_text(encoding="utf-8")
+        # Verificar se ja tem secao de estudos
+        if "## Estudos Verificados" in conteudo:
+            # Verificar duplicata
+            if topic_slug in conteudo and date_str in conteudo:
+                return
+            # Adicionar abaixo da secao existente
+            conteudo = conteudo.replace(
+                "## Estudos Verificados (Skill Estudador)\n",
+                f"## Estudos Verificados (Skill Estudador)\n{ponteiro}",
+            )
+        else:
+            conteudo += f"\n## Estudos Verificados (Skill Estudador)\n{ponteiro}"
+        memory_path.write_text(conteudo, encoding="utf-8")
+    else:
+        memory_path.write_text(
+            f"# Memoria do Projeto\n\n## Estudos Verificados (Skill Estudador)\n{ponteiro}",
+            encoding="utf-8",
+        )
+
+
 def main() -> int:
     args = parse_args()
     date_str = datetime.now().strftime("%Y-%m-%d")
@@ -66,6 +106,9 @@ def main() -> int:
     (out_dir / "index.json").write_text(
         json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+
+    # Escrever ponteiro no MEMORY.md do projeto atual
+    escrever_ponteiro_memory_md(args.topic_slug, out_dir, date_str)
 
     print(str(out_dir))
     return 0

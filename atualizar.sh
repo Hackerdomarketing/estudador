@@ -106,9 +106,38 @@ fi
 
 echo ""
 
-# ─── PASSO 3: Confirmacao ──────────────────────────────────────
+# ─── PASSO 3: Configurar estrutura de memoria ───────────────────
 
-echo -e "${YELLOW}[3/3]${NC} Verificando..."
+echo -e "${YELLOW}[3/4]${NC} Configurando estrutura de memoria..."
+
+# Calcular caminho do MEMORY.md global (auto-memory da Anthropic)
+HOME_KEY=$(echo "$HOME" | tr '/' '-')
+MEMORY_DIR="$HOME/.claude/projects/$HOME_KEY/memory"
+MEMORY_FILE="$MEMORY_DIR/MEMORY.md"
+
+mkdir -p "$MEMORY_DIR"
+
+if [ -f "$MEMORY_FILE" ]; then
+    if grep -q "Estudos Verificados (Skill Estudador)" "$MEMORY_FILE" 2>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} Secao do Estudador ja existe no MEMORY.md"
+    else
+        printf '\n## Estudos Verificados (Skill Estudador)\n' >> "$MEMORY_FILE"
+        echo -e "  ${GREEN}✓${NC} Secao do Estudador adicionada ao MEMORY.md existente"
+    fi
+else
+    cat > "$MEMORY_FILE" << 'MEMEOF'
+# Memoria do Projeto
+
+## Estudos Verificados (Skill Estudador)
+MEMEOF
+    echo -e "  ${GREEN}✓${NC} MEMORY.md criado com secao do Estudador"
+fi
+
+echo ""
+
+# ─── PASSO 4: Confirmacao ──────────────────────────────────────
+
+echo -e "${YELLOW}[4/4]${NC} Verificando..."
 
 if [ -f "$SKILL_DIR/scripts/ativar_estudador.py" ]; then
     echo -e "  ${GREEN}✓${NC} Script atualizado"
