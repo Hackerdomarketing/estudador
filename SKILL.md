@@ -32,18 +32,49 @@ Antes de iniciar qualquer investigacao, declarar o perfil de execucao:
 
 Se houver limitacao, seguir em modo degradado com aviso explicito de impacto no grau de certeza.
 
-## Protocolo de Inicio Obrigatorio
+## Auto-Deteccao de Modo (sem perguntar ao usuario)
 
-Antes de iniciar estudo ou entrega, exibir exatamente:
+Antes de iniciar, identificar o modo de investigacao a partir do contexto do pedido. NAO perguntar ao usuario — detectar e iniciar diretamente.
 
-```text
-Antes de iniciar, preciso saber o que voce quer tirar deste estudo. Responda com o numero:
-1. Arquitetural-Tecnico: Para aplicar uma solucao que voce sabe que existe em algum lugar — entrega: linguagem precisa, estruturas explicitas, referencias diretas por nivel hierarquico. Voce sai com o que precisa para executar, sem rodeios.
-2. Estrategico-Executivo: Para decidir algo onde voce nao pode errar — entrega: sintese com grau de certeza expresso, controversias sinalizadas, recomendacoes acionaveis. Voce sabe o que e verdadeiro e com que confianca pode agir.
-3. Investigativo-Narrativo: Para entender o que esta quebrando ou por que algo nao funciona — entrega: achados em sequencia logica, surpresas e contradicoes incluidas. Voce entende o que aconteceu, nao so o sintoma.
-4. Didatico-Detalhado: Para resolver problemas novos e saber o suficiente para resolver — entrega: cada passo do raciocinio exposto, metodo transparente, educativo. Voce entende por que funciona, nao so o que fazer.
-Aguardo sua escolha antes de iniciar o processo completo.
-```
+### Como detectar o modo
+
+Analisar: o que o usuario quer FAZER com o conhecimento depois?
+
+**Arquitetural-Tecnico** — usuario precisa EXECUTAR algo que sabe que existe:
+- Sinais: "como fazer", "como usar", "como configurar", "como implementar", APIs, codigo, comandos, ferramentas especificas, "preciso de exemplos", "estrutura de", "qual e o formato"
+- Entrega: linguagem precisa, estruturas explicitas, referencias por nivel hierarquico. Sem rodeios — sai com o que precisa para executar.
+
+**Estrategico-Executivo** — usuario precisa DECIDIR algo onde nao pode errar:
+- Sinais: "vale a pena", "devo usar", "melhor opcao", "qual escolher", comparacoes entre alternativas, decisao de negocio, "pode dar errado", alto custo de erro
+- Entrega: sintese com grau de certeza expresso, controversias sinalizadas, recomendacoes acionaveis. Sabe o que e verdadeiro e com que confianca pode agir.
+
+**Investigativo-Narrativo** — usuario precisa ENTENDER por que algo nao funciona:
+- Sinais: "por que nao funciona", "o que esta quebrando", erro especifico, falha, comportamento inesperado, "nao entendo por que", "estava funcionando e parou", debug
+- Entrega: achados em sequencia logica, surpresas e contradicoes incluidas. Entende o que aconteceu, nao so o sintoma.
+
+**Didatico-Detalhado** — usuario precisa APRENDER algo novo do zero:
+- Sinais: "o que e", "como funciona", "me explica", "nunca vi isso", "quero entender", aprender conceito novo, "por que existe", primeira vez no assunto
+- Entrega: cada passo do raciocinio exposto, metodo transparente, educativo. Entende por que funciona, nao so o que fazer.
+
+### Regras de desempate
+
+- Pedido mistura execucao + aprendizado → Arquitetural-Tecnico (execucao tem prioridade)
+- Pedido mistura decisao + erro → Investigativo-Narrativo (entender o problema primeiro)
+- Contexto totalmente ambiguo → Estrategico-Executivo (mais completo por padrao)
+- Usuario especifica explicitamente qual modo → usar o modo pedido, ignorar auto-deteccao
+
+### Como anunciar (obrigatorio, uma linha antes de iniciar)
+
+Exibir exatamente:
+`[Modo: NOME-DO-MODO — MOTIVO-EM-UMA-FRASE]`
+
+Exemplos:
+- `[Modo: Arquitetural-Tecnico — voce precisa implementar uma solucao especifica]`
+- `[Modo: Investigativo-Narrativo — voce esta debugando um comportamento inesperado]`
+- `[Modo: Estrategico-Executivo — voce precisa decidir entre alternativas]`
+- `[Modo: Didatico-Detalhado — voce esta aprendendo um conceito novo]`
+
+Depois do anuncio, iniciar o processo imediatamente sem aguardar confirmacao.
 
 Regra absoluta: estilo altera apenas a forma de apresentacao. A profundidade e o rigor permanecem integrais.
 
