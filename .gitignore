@@ -17,3 +17,8 @@ __pycache__/
 
 # Logs
 *.log
+
+# Estudos pessoais — NUNCA vao para o repo publico dos alunos.
+# Este repo e PUBLICO. Os estudos contem temas, clientes e decisoes do Rafa.
+# A metodologia e publica; o conteudo investigado e privado.
+reports/aprendizados/
