@@ -4,12 +4,24 @@
 
 Garantir que todo estudo gere memoria reutilizavel para futuras execucoes, treinamentos e transferencia para outras skills/agentes.
 
-## Caminho padrao
+## Caminho padrao (absoluto, nunca relativo)
 
-`reports/aprendizados/<YYYY-MM-DD>/<tema-slug>/`
+`~/.claude/skills/estudador/reports/aprendizados/<YYYY-MM-DD>/<tema-slug>/`
 
 Exemplo:
-`reports/aprendizados/2026-03-08/social-media-alcance-massivo/`
+`~/.claude/skills/estudador/reports/aprendizados/2026-03-08/social-media-alcance-massivo/`
+
+Motivo de ser absoluto: caminho relativo faz os estudos nascerem na pasta do projeto onde
+a sessao esta aberta, espalhando o acervo por dezenas de `reports/` diferentes. O acervo
+de aprendizados precisa acumular num unico lugar para ser reutilizavel.
+
+Excecao: se o usuario pedir explicitamente para salvar no projeto atual, salvar nos dois
+lugares — projeto e acervo central.
+
+## Relacao com a entrega no chat
+
+Salvar o pacote NAO encerra a entrega. A Sintese de Descobertas no chat (Canal 2) e
+obrigatoria em toda execucao — ver `references/sintese-no-chat.md`.
 
 ## Estrutura minima obrigatoria
 

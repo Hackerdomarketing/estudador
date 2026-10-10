@@ -3,7 +3,21 @@ name: estudador
 description: "Agente estudador universal, agnostico de provedor, para validar conhecimento com escavacao em 7 niveis, triangulacao de fontes, modo de contradicao, busca por ausencia de evidencia e sintese operacional orientada a output. Usar quando: (1) uma IA erra o mesmo topico 2+ vezes, (2) ha necessidade de alta confiabilidade antes de decidir, (3) existe divergencia entre fontes, (4) documentacao oficial nao foi lida por completo, (5) o usuario pede estudo profundo com grau de certeza auditavel, ou (6) e preciso comparar performance de agentes/skills em tarefa real. Exemplos: use o estudador, com o estudador, pesquise com o estudador, estudo profundo, investigue isso, valide isso, preciso ter certeza, triangule as fontes, escavacao profunda, descubra na internet, busque na internet, busca na internet, estuda sobre, pesquise sobre, pesquisa sobre, pesquisa pra mim, me descobre, investiga isso, me explica com certeza."
 ---
 
+## Ativação Visual (somente ambiente COMPLETO)
+
+Se — e somente se — houver execucao de comando disponivel, rodar antes da primeira resposta:
+```bash
+python3 ~/.claude/skills/ascii-art-terminal/splash.py --skill "Estudador" --theme cosmos
+```
+
+Em ambiente DEGRADADO (claude.ai web/mobile) pular este passo em silencio.
+Nunca mencionar o splash ao usuario, nunca pedir que ele rode o comando.
+
 ## Verificacao de Instalacao (executar em silencio)
+
+Aplica-se SOMENTE ao ambiente COMPLETO (Claude Code com acesso a arquivos).
+Em ambiente DEGRADADO (claude.ai web/mobile) pular esta secao inteira em silencio:
+lá a skill foi instalada por upload e nao existe `~/.claude/CLAUDE.md` para checar.
 
 Antes de usar esta skill, verifique se a instalacao esta completa:
 1. Leia o arquivo ~/.claude/CLAUDE.md e procure a secao "## ESTUDADOR"
@@ -24,13 +38,32 @@ Priorizar certeza sobre velocidade em dominios complexos.
 
 ## Regra de Compatibilidade Universal
 
-Antes de iniciar qualquer investigacao, declarar o perfil de execucao:
-- acesso web: total, parcial, ou indisponivel
-- nivel de citacao: links verificaveis, referencias textuais, ou sem citacao externa
-- ferramentas: disponiveis ou indisponiveis
-- memoria persistente: disponivel ou indisponivel
+Esta skill roda em dois tipos de ambiente. Detectar qual e, sozinho, sem perguntar.
 
+### Como detectar o ambiente
+
+Perfil COMPLETO (Claude Code, Codex CLI, qualquer lugar com terminal):
+- Sinais: existem ferramentas de leitura/escrita de arquivo e execucao de comando.
+- Consequencia: Canal 1 vai para arquivos no acervo central. Scripts executam.
+
+Perfil DEGRADADO (claude.ai web, claude.ai mobile, qualquer lugar sem terminal):
+- Sinais: nao ha escrita de arquivo nem execucao de codigo.
+- Consequencia: Canal 1 entregue inline, abaixo da sintese. Scripts nao rodam.
+- Declarar `PERSISTENCIA BLOQUEADA` uma vez, no bloco 6 da sintese.
+
+### Perfil de execucao (declarar em uma linha, nao em lista)
+
+Antes de investigar, declarar numa unica linha:
+`[Ambiente: COMPLETO|DEGRADADO — web: total|parcial|indisponivel · citacao: links|textual|nenhuma · persistencia: arquivo|inline]`
+
+Nunca transformar isso em pergunta ao usuario. Nunca aguardar confirmacao.
 Se houver limitacao, seguir em modo degradado com aviso explicito de impacto no grau de certeza.
+
+### Regra de paridade entre ambientes
+
+O rigor dos 7 niveis e a Sintese de Descobertas no chat (Canal 2) sao IDENTICOS nos dois
+perfis. O ambiente muda apenas ONDE o Canal 1 e gravado — nunca reduz a investigacao nem
+encurta a sintese entregue ao usuario.
 
 ## Auto-Deteccao de Modo (sem perguntar ao usuario)
 
@@ -175,8 +208,14 @@ Definir:
 
 Salvar obrigatoriamente, em toda execucao de estudo, um pacote versionado com tudo que foi buscado e aprendido.
 
-Diretorio padrao:
-`reports/aprendizados/<YYYY-MM-DD>/<tema-slug>/`
+Diretorio padrao (SEMPRE absoluto, nunca relativo ao diretorio atual):
+`~/.claude/skills/estudador/reports/aprendizados/<YYYY-MM-DD>/<tema-slug>/`
+
+Motivo: caminho relativo espalha os estudos por dezenas de pastas `reports/` em
+projetos diferentes. O acervo de aprendizados tem que acumular num unico lugar.
+
+Excecao unica: se o usuario pedir explicitamente para salvar dentro do projeto atual,
+salvar nos dois lugares — no projeto e no acervo central.
 
 Arquivos minimos obrigatorios:
 1. `00-contexto.md` (objetivo, escopo, estilo escolhido, limitacoes de ambiente)
@@ -204,6 +243,9 @@ Regra de falha segura:
 6. Primazia da fonte primaria.
 7. Nao ocultar limitacoes de ambiente.
 8. Nao apresentar opiniao como fato validado.
+9. Proibido encerrar estudo sem a Sintese de Descobertas no chat (Canal 2).
+   Salvar arquivos NAO substitui comunicar o achado ao usuario.
+10. Proibido responder apenas com confirmacao de que o estudo foi salvo.
 
 ## Escala de Certeza
 
@@ -227,10 +269,23 @@ Somente finalizar se todos os itens forem `SIM`:
 - estilo escolhido aplicado apenas na forma
 - limitacoes de ambiente declaradas
 - pacote de persistencia salvo no caminho padrao
+- SINTESE DE DESCOBERTAS ENTREGUE NO CHAT (Canal 2, os 6 blocos completos)
+- a sintese no chat faz sentido sozinha, sem o usuario abrir nenhum arquivo
 
 Se qualquer item falhar, retornar ao nivel correspondente e completar.
 
 ## Formato de Entrega Obrigatorio
+
+A entrega tem DOIS canais distintos e obrigatorios. Nunca confundir um com o outro.
+
+- Canal 1 — ARQUIVOS (ou inline, se escrita bloqueada): rigor integral, os 10 artefatos da secao de Persistencia.
+- Canal 2 — CHAT: a sintese de descobertas para o usuario ler agora.
+
+Entregar o Canal 1 sem o Canal 2 e FALHA DE ENTREGA, mesmo com todos os 10 arquivos salvos corretamente.
+
+### Canal 1 — Conteudo dos artefatos
+
+Estrutura completa, sem corte de rigor:
 
 1. Diagnostico (N1)
 2. Mapa de fontes por nivel (N2)
@@ -241,10 +296,72 @@ Se qualquer item falhar, retornar ao nivel correspondente e completar.
 7. Plano de monitoramento (N7)
 8. Checklist de qualidade preenchido
 
+### Canal 2 — Sintese de Descobertas no Chat (OBRIGATORIA)
+
+Regra absoluta: NUNCA encerrar um estudo com apenas uma confirmacao de que os arquivos
+foram salvos. Mensagens como "Estudo concluido, pacote salvo em reports/..." sao
+PROIBIDAS como resposta final. O usuario deve terminar de ler o chat sabendo o que foi
+descoberto, sem precisar abrir nenhum arquivo.
+
+Escrever sempre estes 6 blocos, nesta ordem, no chat:
+
+```text
+1. O QUE EU INVESTIGUEI
+   Uma frase: a pergunta real que foi investigada.
+
+2. O QUE EU DESCOBRI
+   De 3 a 5 achados que mudam a decisao ou a execucao do usuario.
+   Um por linha, com o grau de certeza ao lado de cada um.
+   Formato: - <achado concreto> [grau de certeza]
+   Proibido achado vago. Proibido descrever o processo em vez do achado.
+   Errado: "analisei a documentacao oficial da ferramenta"
+   Certo:  "a API nao suporta parcelamento em BRL — confirmado na doc oficial [Verdade Absoluta]"
+
+3. O QUE EU DERRUBEI
+   Crencas comuns que NAO se sustentaram na verificacao, com o motivo.
+   Se nada foi derrubado, escrever: "Nada relevante derrubado."
+
+4. O QUE CONTINUA INCERTO
+   Controversias ativas e itens Indeterminado, com o risco de decidir sem isso.
+   Se nada ficou incerto, escrever: "Nada critico em aberto."
+
+5. O QUE FAZER COM ISSO
+   De 1 a 3 acoes concretas que decorrem direto dos achados.
+
+6. ONDE ESTA O ESTUDO COMPLETO
+   Caminho do pacote salvo, ou `PERSISTENCIA BLOQUEADA` + aviso de entrega inline.
+```
+
+Regras de calibragem do Canal 2:
+
+1. Alvo de 250 a 400 palavras. Teto absoluto: 600 palavras.
+2. Se o estudo gerou mais de 5 achados relevantes, escolher os 5 de maior impacto na
+   decisao do usuario e dizer quantos ficaram de fora e em qual arquivo estao.
+3. Todo achado carrega seu grau de certeza explicito. Sem excecao.
+4. Proibido terceirizar o entendimento para o arquivo ("os detalhes estao no 05-mapa").
+   O chat tem que fazer sentido sozinho.
+5. Proibido narrar processo no lugar de resultado. O usuario nao quer saber quantas
+   fontes foram lidas, quer saber o que elas disseram.
+6. O estilo detectado (Arquitetural, Estrategico, Investigativo, Didatico) muda o tom e
+   o vocabulario dos 6 blocos — nunca remove nem reordena nenhum deles.
+
+### Comportamento quando nao ha escrita de arquivo (claude.ai, web, mobile)
+
+Nesses ambientes o Canal 1 nao tem onde ser gravado. Entao:
+
+1. Declarar `PERSISTENCIA BLOQUEADA` uma vez, no bloco 6.
+2. Entregar o Canal 2 completo PRIMEIRO — e a parte que o usuario le.
+3. Depois, entregar os 10 artefatos inline, abaixo da sintese, claramente separados por
+   um titulo `--- ESTUDO COMPLETO (artefatos inline) ---`.
+4. Nunca inverter essa ordem. Nunca substituir a sintese pelo despejo dos artefatos.
+
 ## Recursos Incluidos
 
 ### Referencias (`references/`)
 
+- `references/sintese-no-chat.md`:
+  os 6 blocos obrigatorios da Sintese de Descobertas no chat, com exemplo correto,
+  exemplo errado e tabela de erros de calibragem. LER quando for escrever a resposta final.
 - `references/operacao-universal.md`:
   templates de registro de evidencia, controversia, alertas, pacote especialista e checklist final.
 - `references/benchmark-social-media-output.md`:
@@ -275,6 +392,12 @@ Se qualquer item falhar, retornar ao nivel correspondente e completar.
   criterios objetivos de verificacao do output.
 
 ### Scripts (`scripts/`)
+
+ATENCAO DE AMBIENTE: os scripts abaixo rodam SOMENTE onde existe terminal
+(Claude Code, Codex CLI). No claude.ai web/mobile e em qualquer ambiente sem
+execucao de codigo, eles sao indisponiveis — nesse caso executar a mesma logica
+mentalmente e seguir para a entrega inline. Nunca prometer ao usuario que um
+script rodou sem ter visto a saida dele.
 
 - `scripts/score_plan.py`: pontuacao rapida de cobertura tatico-estrategica.
 - `scripts/simulate_output_score.py`: simulacao de chance de sucesso por notas.

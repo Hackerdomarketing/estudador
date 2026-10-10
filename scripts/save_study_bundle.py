@@ -27,8 +27,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--topic-slug", required=True, help="Slug do tema do estudo")
     parser.add_argument(
         "--base-dir",
-        default="reports/aprendizados",
-        help="Diretorio base de persistencia (padrao: reports/aprendizados)",
+        default="~/.claude/skills/estudador/reports/aprendizados",
+        help=(
+            "Diretorio base de persistencia. Padrao absoluto no acervo central: "
+            "~/.claude/skills/estudador/reports/aprendizados"
+        ),
     )
     parser.add_argument(
         "--agent-name",
@@ -81,7 +84,7 @@ def escrever_ponteiro_memory_md(topic_slug: str, study_path: Path, date_str: str
 def main() -> int:
     args = parse_args()
     date_str = datetime.now().strftime("%Y-%m-%d")
-    out_dir = Path(args.base_dir) / date_str / args.topic_slug
+    out_dir = Path(args.base_dir).expanduser() / date_str / args.topic_slug
     out_dir.mkdir(parents=True, exist_ok=True)
 
     for fname in FILES:

@@ -96,7 +96,7 @@ Entregar bloco reutilizavel com:
 - Gatilhos de revisao futura
 
 Persistencia obrigatoria (sempre que houver escrita de arquivo):
-- Salvar em `reports/aprendizados/<YYYY-MM-DD>/<tema-slug>/`
+- Salvar em `~/.claude/skills/estudador/reports/aprendizados/<YYYY-MM-DD>/<tema-slug>/` (absoluto)
 - Gerar `index.json` com:
   - `topic`
   - `generated_at`
@@ -104,9 +104,12 @@ Persistencia obrigatoria (sempre que houver escrita de arquivo):
   - `certainty_summary`
   - `files`
 
-Se escrita de arquivo estiver indisponivel:
-- Marcar `PERSISTENCIA BLOQUEADA`
-- Entregar os artefatos completos inline
+Se escrita de arquivo estiver indisponivel (claude.ai web/mobile):
+- Marcar `PERSISTENCIA BLOQUEADA` uma vez, no bloco 6 da sintese
+- Entregar a Sintese de Descobertas no chat PRIMEIRO
+- Depois entregar os artefatos completos inline, sob o titulo
+  `--- ESTUDO COMPLETO (artefatos inline) ---`
+- Nunca inverter essa ordem nem substituir a sintese pelo despejo dos artefatos
 - Tentar gravar assim que escrita estiver disponivel
 
 ## 8) Checklist Final (Pass/Fail)
@@ -122,3 +125,5 @@ Marcar `SIM` ou `NAO` para cada item:
 - Grau de certeza foi informado por afirmacao?
 - Estilo escolhido afetou so a forma?
 - Pacote de persistencia foi salvo no caminho padrao?
+- Sintese de Descobertas foi entregue no chat com os 6 blocos?
+- A sintese faz sentido sozinha, sem abrir arquivo?
